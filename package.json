@@ -27,6 +27,15 @@
   "workspacePlugin": {
     "name": "ghost",
     "label": "Ghost",
+    "needs": [
+      [
+        "dev",
+        "test",
+        "sandboxes",
+        "demos"
+      ],
+      "ai-agents"
+    ],
     "commands": {
       "types": [
         "sites"
