@@ -121,3 +121,11 @@ project (`stop` takes no `-y`), `bash cmd-tools-backup-<folder>.sh <name>`,
 | `Could not sign in as the owner` | The owner's address or password was changed on the site, so it is no longer the workspace account. The accounts cannot be managed from the tool until it is. |
 | `No invitation … reached the mailbox` | The mail of the site no longer goes to the container's mailbox: look at `"mail"` in `ghost/config.production.json`. |
 | `is not a Ghost project` from the CLI tool | The project has no `.ddev/config.ghost.yaml`: it was not built by this builder. |
+
+## What comes with you
+
+The Ghost plugin places these beside you, each in the workspace folder of its kind: the agent
+`ghost-tester` (`ai-agents/`), the skill `ghost-scenarios` (`ai-skills/`), the command
+`/ghost-test <site>` (`ai-commands/`) and the prompt `ghost-build-and-test` (`ai-prompts/`), which
+is this agent's whole first job as a launch command: build, say what the site is, set the testing
+stack up, run the first feature.
