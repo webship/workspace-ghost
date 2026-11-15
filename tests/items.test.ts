@@ -178,3 +178,18 @@ test('the items say container-based, name the plugin they come with, and carry n
   const readme = read('README.md');
   for (const name of [...AGENTS, ...SKILLS, ...AI_COMMANDS, ...PROMPTS]) assert.ok(readme.includes(name), `the README lists ${name}`);
 });
+
+// The items are for any AI CLI: the body is plain Markdown ("run this command", "read this file"), and Claude Code is
+// only the default shape (the frontmatter, the file layout, the launch line of a prompt).
+test('the body of an item names no tool or feature of one AI CLI', () => {
+  for (const f of ITEM_FILES.filter((i) => i.endsWith('.md'))) {
+    const src = read(f);
+    let body = src.startsWith('---\n') ? src.split('\n---\n').slice(1).join('\n---\n') : src;
+    if (manifest.ai.prompts.includes(f)) {
+      assert.match(body, /another AI CLI/, `${f} says the text between the quotes can be given to another AI CLI as it is`);
+      body = body.split('\n').filter((l) => !/^\s*claude --permission-mode bypassPermissions """\s*$/.test(l) && !/another AI CLI/.test(l)).join('\n');
+    }
+    assert.doesNotMatch(body, /\b(Bash|Read|Write|Edit|Grep|Glob|Task|Skill|Agent) tool\b|\bsubagents?\b|bypassPermissions|\bClaude\b|\.claude\b/, `${f}: the body is for any AI CLI`);
+  }
+  for (const f of manifest.ai.commands) assert.match(read(f), /The first word is/, `${f} says in words what the arguments are`);
+});

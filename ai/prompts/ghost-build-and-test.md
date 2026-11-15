@@ -1,5 +1,7 @@
 Build a self-hosted Ghost site in a sites folder and prove it with its first webship-js feature.
 
+`claude` is the default launcher; the text between the triple quotes is plain and can be given to another AI CLI as it is.
+
 ```
 claude --permission-mode bypassPermissions """
 Build a Ghost site named <name> in this sites folder and test it with webship-js
