@@ -3,7 +3,8 @@
 Ghost for the [Webship Workspace](https://github.com/webship/workspace) dashboard: a builder that
 makes a real, self-hosted Ghost site in a container, a Ghost-CLI tool for the sites it built, the
 default staff accounts, the [Ghost step pack](https://github.com/webship/ghost-steps) wired into
-the workspace's testing setup, and two AI agents that know all of it.
+the workspace's testing setup, and its AI items — two agents, a skill, a
+command and a prompt — each listed in the workspace folder of its kind.
 
 The workspace is container-based (DDEV by default): a Ghost project is a row like any other, so the
 row menus the core draws (start, stop, launch, backup, clone, remove, tests) work on it unchanged.
@@ -21,16 +22,25 @@ what Ghost needs, see [What is different from a PHP platform](#what-is-different
 cd ~/workspace
 bash core/scripts/plugins.sh --require github:webship/workspace-ghost   # npm install into the dashboard
 bash core/scripts/plugins.sh --activate ghost                            # plugins.ghost in settings.yml
-bash core/scripts/plugins.sh --install ghost                             # commands, functions, args, agents
+bash core/scripts/plugins.sh --install ghost                             # commands, functions, args, AI items
 bash core/scripts/plugins.sh --configure ghost                           # nothing to configure: it has no settings file
 ```
 
 The same four steps are buttons on the dashboard's **Settings → Plugins** page. `--install` is
-idempotent. `--uninstall` removes what it placed; an agent you edited stays.
+idempotent. `--uninstall` removes what it placed; an AI item you edited stays.
 
-The commands land in the sites folders that are in the workspace (`dev`, `test`, `sandboxes`,
-`demos`); the agents land in the AI Agents folder (`ai-agents/`) when the workspace has one, and are
-installed into `~/.claude/agents` from there like any other agent.
+Everything the plugin carries lands in the folder it belongs to, when that folder is an active
+workspace folder:
+
+| What | Lands in |
+| --- | --- |
+| `cmd-ghost-project.sh`, `cmd-tools-ghost-cli.sh` | every active sites folder: `dev/`, `test/`, `sandboxes/`, `demos/` |
+| The agents `ghost-site-builder`, `ghost-tester` | `ai-agents/` |
+| The skill `ghost-scenarios` | `ai-skills/` |
+| The command `/ghost-test` | `ai-commands/` |
+| The prompt `ghost-build-and-test` | `ai-prompts/` |
+
+There they are listed like any other item of the folder, and installed into Claude Code from there.
 
 The agents, the builder's flags in the Build form and the step pack in the testing setup need a
 Webship Workspace after 1.0.6.
@@ -40,18 +50,18 @@ Webship Workspace after 1.0.6.
 A workspace starts empty, so the manifest says what else this plugin needs (`needs`):
 
 - one sites folder, for the builder and the tool: `dev`, `test`, `sandboxes`, `demos` (`dev` is the one added when none is there). The folder also carries `cmd-tools-testing.sh` and the Users tools this plugin's hooks answer to.
-- `ai-agents`, the AI Agents folder its two agents are placed in.
+- `ai-agents`, `ai-skills`, `ai-commands` and `ai-prompts`: the AI folders its agents, its skill, its command and its prompt are placed in.
 
 `--require` says so, `--activate` and `--install` stop until the workspace has them, and `--with-needs` adds what is missing first:
 
 ```bash
-bash core/scripts/plugins.sh --activate ghost --with-needs   # dev and ai-agents are required, activated and installed first
+bash core/scripts/plugins.sh --activate ghost --with-needs   # dev and the four AI folders are required, activated and installed first
 bash core/scripts/plugins.sh --install ghost
 ```
 
 Everything the builder runs for a site runs in the site's own container, through the container tool the workspace already needs; the plugin asks for no command of its own on the machine.
 
-A workspace that knows none of this (Webship Workspace 1.0.8 and older) ignores the keys: add a sites folder and the AI Agents folder yourself, then `--install ghost` again.
+A workspace that knows none of this (Webship Workspace 1.0.8 and older) ignores the keys: add a sites folder and the AI folders yourself, then `--install ghost` again. A kind whose folder is not there is skipped, and the install says so.
 
 ## What the package holds
 
@@ -63,10 +73,14 @@ A workspace that knows none of this (Webship Workspace 1.0.8 and older) ignores 
 | `scripts/args/arg-ghost.sh`, `arg-ghost-cli.sh` | Their argparse; the Build form draws the builder's flags from the first |
 | `scripts/ghost-accounts.js` | The setup and the staff accounts through the Admin API, run with Node.js in the project's container |
 | `testing/site.feature` | The first feature a Ghost project gets when testing is set up |
-| `agents/ghost-site-builder.md` | The agent that builds and maintains Ghost sites with these commands |
-| `agents/ghost-tester.md` | The agent that writes and runs scenarios with the Ghost step pack |
+| `ai/agents/ghost-site-builder.md` | The agent that builds and maintains Ghost sites with these commands |
+| `ai/agents/ghost-tester.md` | The agent that writes and runs scenarios with the Ghost step pack |
+| `ai/skills/ghost-scenarios/` | The skill: the step pack's phrases by area, the traps found on a real site, three example features |
+| `ai/commands/ghost-test.md` | The slash command `/ghost-test <site>`: set up, match every step, run, report |
+| `ai/prompts/ghost-build-and-test.md` | A prompt: the whole launch command for a new session |
 | `src/index.ts` | `register(api)`: what the assistant is told about Ghost here |
 | `features/ghost.feature` | Scenarios for the dashboard's own browser suite |
+| `docs/plugin-items-pattern.md` | How a plugin carries its own commands and AI items, and how to prove it |
 
 The `workspacePlugin` block in `package.json` is the manifest the installer reads.
 
@@ -155,25 +169,41 @@ webship-js's own, writes the users registry (the handles above, overridable with
 places `tests/features/site.feature` when the project has none, and makes sure the default accounts
 are on the site. Run it again and it adds what is missing and keeps what you changed.
 
-## The agents
+## The AI items
 
-| Agent | Use it to |
-| --- | --- |
-| `ghost-site-builder` | Build, update, restart, maintain or remove a Ghost site with the commands above, in containers only |
-| `ghost-tester` | Set the testing stack up, look at the site in the Playwright MCP browser first, write scenarios from the pack's steps and run them; it never creates an account in a suite and never writes a platform name into a step phrase |
+`ai/` in the package holds one folder per kind, the manifest's `ai` block names each item, and
+`--install` places it in the workspace folder of that kind.
 
-After `--install` they are in the AI Agents folder of the dashboard; **Install** there puts one into
-`~/.claude/agents`, or from the command line:
+| Kind | Item | Use it to |
+| --- | --- | --- |
+| Agent | `ghost-site-builder` | Build, update, restart, maintain or remove a Ghost site with the commands above, in containers only |
+| Agent | `ghost-tester` | Set the testing stack up, look at the site in the Playwright MCP browser first, write scenarios from the pack's steps and run them; it never creates an account in a suite and never writes a platform name into a step phrase |
+| Skill | `ghost-scenarios` | Write a scenario from phrases that exist: the pack's steps by area, the handles of the users registry, the traps found on a real site, and three features that pass on a fresh site |
+| Command | `/ghost-test <site> [feature or @tag]` | Run the suite of a site from inside a session: set up when missing, match every step, run, report what failed and why |
+| Prompt | `ghost-build-and-test` | Start a session that builds a site, says what it is, sets the testing stack up and runs the first feature |
+
+After `--install` each is in its folder on the dashboard. **Install** there puts an agent, a skill
+or a command into Claude Code (`~/.claude/agents`, `~/.claude/skills`, `~/.claude/commands`), or
+from the command line:
 
 ```bash
-cd ~/workspace/ai-agents
-bash cmd-tools-ai-items.sh ghost-tester --install
+cd ~/workspace/ai-agents   && bash cmd-tools-ai-items.sh ghost-tester --install
+cd ~/workspace/ai-skills   && bash cmd-tools-ai-items.sh ghost-scenarios --install
+cd ~/workspace/ai-commands && bash cmd-tools-ai-items.sh ghost-test --install
 ```
+
+A prompt is not installed: it is the whole `claude …` launch command of a new session, and the
+dashboard's **New screen** form lists it as a template. By hand, fill the placeholders in and run
+the command of the file from the folder it names.
+
+Every step phrase the items show is checked against the definitions of the step pack and of
+webship-js (`tests/fixtures/step-definitions.txt`), and every command and flag against the
+plugin's own.
 
 ## Develop it
 
 ```bash
 npm install     # builds dist/ (TypeScript)
 npm run lint
-npm test        # the manifest, the commands, the agents, the functions against a scaffolded project
+npm test        # the manifest, the commands, the AI items, the functions against a scaffolded project
 ```
