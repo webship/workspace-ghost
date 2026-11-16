@@ -69,7 +69,7 @@ workspace account, never a made-up owner.
 ```bash
 bash cmd-tools-ghost-cli.sh mysite                                  # what it is: version, address, staff accounts
 bash cmd-tools-ghost-cli.sh mysite --run "version"
-bash cmd-tools-ghost-cli.sh mysite --run "doctor"
+bash cmd-tools-ghost-cli.sh mysite --run "doctor"                   # on a running site it ends with "Port 2368 is in use" and exit 1: Ghost itself holds the port, read the other checks
 bash cmd-tools-ghost-cli.sh mysite --run "config get url"
 bash cmd-tools-ghost-cli.sh mysite --update                         # the latest release, then Ghost is started again
 bash cmd-tools-ghost-cli.sh mysite --restart                        # after a change to config.production.json or a theme

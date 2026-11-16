@@ -5,7 +5,7 @@ parser.add_argument('PROJECT_NAME',
                     help='The Ghost project in this workspace.')
 parser.add_argument('-r', '--run',
                     default="_none_",
-                    help='A Ghost-CLI command to run in the project, without the leading ghost. Example: --run "doctor"')
+                    help='A Ghost-CLI command to run in the project, without the leading ghost. Example: --run "version"')
 parser.add_argument('-u', '--update',
                     action='store_true',
                     default=False,

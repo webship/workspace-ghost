@@ -170,3 +170,17 @@ test('the first feature names no platform in a step, and no password', () => {
   assert.doesNotMatch(feature, /invit|I register|sign up/i, 'a suite never creates an account');
   assert.doesNotMatch(feature, /"owner"/, 'the owner is the workspace account: no scenario signs in as it');
 });
+
+test('the --run example of the help and of the README is one that runs on a running site', () => {
+  // `ghost doctor` fails its config check while Ghost is running ("Port '2368' is in use", exit 1):
+  // Ghost itself holds the port. It is not the example to hand to somebody who has just built a site.
+  const help = fs.readFileSync(path.join(PKG, 'scripts', 'args', 'arg-ghost-cli.sh'), 'utf8');
+  const example = /Example: --run "([^"]+)"/.exec(help);
+  assert.ok(example, 'the help of --run gives an example');
+  assert.strictEqual(example![1], 'version');
+  const readme = fs.readFileSync(path.join(PKG, 'README.md'), 'utf8');
+  assert.doesNotMatch(readme, /--run "doctor"/);
+  // Where doctor is still shown, the line says what it answers.
+  const agent = fs.readFileSync(path.join(PKG, 'ai', 'agents', 'ghost-site-builder.md'), 'utf8');
+  for (const line of agent.split('\n').filter((l) => /--run "doctor"/.test(l))) assert.match(line, /in use/, line);
+});
