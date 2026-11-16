@@ -130,7 +130,7 @@ site is built and the builder says that the setup waits at `/ghost`.
 
 ```bash
 bash cmd-tools-ghost-cli.sh mysite                         # version, address, staff accounts
-bash cmd-tools-ghost-cli.sh mysite --run "doctor"          # any Ghost-CLI command
+bash cmd-tools-ghost-cli.sh mysite --run "version"         # any Ghost-CLI command
 bash cmd-tools-ghost-cli.sh mysite --update                # the latest release, then Ghost is started again
 bash cmd-tools-ghost-cli.sh mysite --restart               # start Ghost again and wait for it
 bash cmd-tools-ghost-cli.sh mysite --add-users             # the default staff accounts
