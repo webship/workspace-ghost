@@ -1,6 +1,6 @@
 {
   "name": "@webship.co/workspace-ghost",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Ghost for Webship Workspace: the builder (`cmd-ghost-project.sh`) and the Ghost-CLI tool in every sites folder, the default staff accounts, the Ghost step pack wired into the testing setup, and its AI items in their folders: two agents, a skill, a command and a prompt.",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
