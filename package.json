@@ -23,7 +23,7 @@
     "build": "tsc -p tsconfig.json",
     "prepare": "npm run build",
     "test": "npm run build && node --test dist/tests/*.test.js",
-    "lint": "tsc -p tsconfig.json --noEmit"
+    "lint": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.scripts.json"
   },
   "workspacePlugin": {
     "name": "ghost",
@@ -64,7 +64,7 @@
         "scripts/args/arg-ghost-cli.sh"
       ],
       "machine": [
-        "scripts/ghost-accounts.js",
+        "scripts/ghost-accounts.cts",
         "testing/site.feature"
       ]
     },

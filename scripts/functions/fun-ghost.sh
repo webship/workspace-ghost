@@ -173,13 +173,14 @@ function ghost_restart() {
   ghost_wait ;
 }
 
-# Run a verb of ghost-accounts.js (installed, setup, add, cancel, list) in the container. The
-# script is piped to node, and what it needs travels as base64 of a JSON object, so no password is
+# Run a verb of ghost-accounts.cts (installed, setup, add, cancel, list) in the container. The
+# script is TypeScript, piped to node as it is (type stripping, --input-type=commonjs-typescript), and
+# what it needs travels as base64 of a JSON object, so no password is
 # written into a file of the project and no quoting can break a value.
 function ghost_accounts() {
-  local verb="$1" script="${WORKSPACE_SCRIPTS}/plugins/ghost/ghost-accounts.js" rows="" user name mail password role payload ;
+  local verb="$1" script="${WORKSPACE_SCRIPTS}/plugins/ghost/ghost-accounts.cts" rows="" user name mail password role payload ;
   if [ ! -f "${script}" ] ; then
-    echo "ghost-accounts.js is not in ${WORKSPACE_SCRIPTS}/plugins/ghost: install the plugin (plugins.sh --install ghost)." ;
+    echo "ghost-accounts.cts is not in ${WORKSPACE_SCRIPTS}/plugins/ghost: install the plugin (plugins.sh --install ghost)." ;
     return 1 ;
   fi
   for user in "${users[@]}" ; do
@@ -196,7 +197,7 @@ print(base64.b64encode(json.dumps({
     "owner": {"name": os.environ["GHOST_OWNER_NAME"], "email": os.environ["GHOST_OWNER_MAIL"], "password": os.environ["GHOST_OWNER_PASS"]},
     "staff": staff,
 }).encode()).decode())')" || return 1 ;
-  ddev exec "GHOST_ACCOUNTS=${payload} node - ${verb}" < "${script}" ;
+  ddev exec "GHOST_ACCOUNTS=${payload} node --input-type=commonjs-typescript - ${verb}" < "${script}" ;
 }
 
 # Build a Ghost site from nothing: the container, the code, and with --install the site itself.
