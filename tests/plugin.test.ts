@@ -86,7 +86,7 @@ test('register() adds the assistant context and nothing else', () => {
 });
 
 test('the docs say container-based, name only what ships, and carry no personal value', () => {
-  const docs = ['README.md', 'docs/plugin-items-pattern.md', ...manifest.ai.agents, 'scripts/functions/fun-ghost.sh', 'scripts/ghost-accounts.js'];
+  const docs = ['README.md', 'docs/plugin-items-pattern.md', ...manifest.ai.agents, 'scripts/functions/fun-ghost.sh', 'scripts/ghost-accounts.cts'];
   for (const f of docs) {
     const src = read(f);
     assert.doesNotMatch(src, /DDEV-only/i, `${f}: the workspace is container-based, DDEV by default`);
@@ -98,16 +98,25 @@ test('the docs say container-based, name only what ships, and carry no personal 
 });
 
 test('it is the open-source platform: no hosted service, no payment provider', () => {
-  for (const f of ['README.md', 'package.json', 'src/index.ts', ...manifest.ai.agents, ...manifest.commands.files, 'scripts/functions/fun-ghost.sh', 'scripts/ghost-accounts.js']) {
+  for (const f of ['README.md', 'package.json', 'src/index.ts', ...manifest.ai.agents, ...manifest.commands.files, 'scripts/functions/fun-ghost.sh', 'scripts/ghost-accounts.cts']) {
     assert.doesNotMatch(read(f), /Ghost\s*\(Pro\)|stripe|billing|subscription plan/i, `${f} names no hosted or paid service`);
   }
 });
 
-test('the accounts script is one Node.js can load, and prints no password', () => {
-  const r = spawnSync(process.execPath, ['--check', path.join(PKG, 'scripts', 'ghost-accounts.js')], { encoding: 'utf8' });
-  assert.strictEqual(r.status, 0, r.stderr);
-  const src = read('scripts/ghost-accounts.js');
+test('the accounts script is TypeScript Node.js runs as it is, and prints no password', () => {
+  const src = read('scripts/ghost-accounts.cts');
   for (const line of src.split('\n').filter((l) => /console\.(log|error)/.test(l))) assert.doesNotMatch(line, /password/i, line);
-  const usage = spawnSync(process.execPath, [path.join(PKG, 'scripts', 'ghost-accounts.js')], { encoding: 'utf8' });
-  assert.strictEqual(usage.status, 2, 'without a verb it says how it is called');
+  // Erasable syntax only: Node.js strips the types and runs what is left.
+  assert.doesNotMatch(src, /^\s*(enum|namespace)\s|^import .* = require\(|\/\/ @ts-nocheck|: any\b/m);
+  assert.match(JSON.parse(read('package.json')).scripts.lint, /tsconfig\.scripts\.json/, 'npm run lint type-checks it');
+  // As a file, and piped to node the way the functions of the plugin run it.
+  const usage = spawnSync(process.execPath, [path.join(PKG, 'scripts', 'ghost-accounts.cts')], { encoding: 'utf8' });
+  assert.strictEqual(usage.status, 2, usage.stderr);
+  assert.strictEqual(usage.stderr.trim(), 'ghost-accounts.cts <installed|setup|add|cancel|list>');
+  const piped = spawnSync(process.execPath, ['--input-type=commonjs-typescript', '-'], { encoding: 'utf8', input: src });
+  assert.strictEqual(piped.status, 2, piped.stderr);
+  assert.strictEqual(piped.stderr.trim(), 'ghost-accounts.cts <installed|setup|add|cancel|list>');
+  assert.match(read('scripts/functions/fun-ghost.sh'), /node --input-type=commonjs-typescript - \$\{verb\}" < "\$\{script\}"/);
+  // No hand-written JavaScript is left in the plugin.
+  for (const f of fs.readdirSync(path.join(PKG, 'scripts')).filter((name) => /\.[cm]?[jt]s$/.test(name))) assert.match(f, /\.[cm]?ts$/, `${f} is TypeScript`);
 });

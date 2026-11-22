@@ -71,7 +71,7 @@ A workspace that knows none of this (Webship Workspace 1.0.8 and older) ignores 
 | `commands/cmd-tools-ghost-cli.sh` | Ghost-CLI for one project: what the site is, a command, an update, a restart, the default accounts |
 | `scripts/functions/fun-ghost.sh` | The bash functions behind both, sourced by bootstrap once installed; the names the core's tools look for (`set_ghost_users`, `add_ghost_users`, `cancel_ghost_users`, `testing_configure_ghost`) |
 | `scripts/args/arg-ghost.sh`, `arg-ghost-cli.sh` | Their argparse; the Build form draws the builder's flags from the first |
-| `scripts/ghost-accounts.js` | The setup and the staff accounts through the Admin API, run with Node.js in the project's container |
+| `scripts/ghost-accounts.cts` | The setup and the staff accounts through the Admin API, run with Node.js in the project's container |
 | `testing/site.feature` | The first feature a Ghost project gets when testing is set up |
 | `ai/agents/ghost-site-builder.md` | The agent that builds and maintains Ghost sites with these commands |
 | `ai/agents/ghost-tester.md` | The agent that writes and runs scenarios with the Ghost step pack |
@@ -204,6 +204,11 @@ plugin's own.
 
 ```bash
 npm install     # builds dist/ (TypeScript)
-npm run lint
-npm test        # the manifest, the commands, the AI items, the functions against a scaffolded project
+npm run lint    # tsc over src/ and tests/, and over the accounts script (tsconfig.scripts.json)
+npm test        # the manifest, the commands, the AI items, the functions against a scaffolded project, the accounts script against a stand-in for the Admin API
 ```
+
+The plugin is TypeScript throughout. `scripts/ghost-accounts.cts` is not compiled: the functions of the plugin
+pipe it to `node --input-type=commonjs-typescript -` in the project's container and Node.js runs it as it is
+(type stripping, from Node.js 22.18, the lowest the Workspace accepts). It is a CommonJS module with erasable
+syntax only.

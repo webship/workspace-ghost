@@ -42,7 +42,7 @@ function project(type: string) {
   const scripts = path.join(root, 'core', 'scripts');
   fs.mkdirSync(path.join(scripts, 'plugins', 'ghost'), { recursive: true });
   fs.copyFileSync(path.join(PKG, 'testing', 'site.feature'), path.join(scripts, 'plugins', 'ghost', 'site.feature'));
-  fs.copyFileSync(path.join(PKG, 'scripts', 'ghost-accounts.js'), path.join(scripts, 'plugins', 'ghost', 'ghost-accounts.js'));
+  fs.copyFileSync(path.join(PKG, 'scripts', 'ghost-accounts.cts'), path.join(scripts, 'plugins', 'ghost', 'ghost-accounts.cts'));
   return { root, dir, scripts };
 }
 
@@ -53,10 +53,10 @@ function bash(script: string, env: Record<string, string> = {}) {
   return r;
 }
 
-/** What a recorded `ddev exec "GHOST_ACCOUNTS=<base64> node - <verb>"` handed to the accounts script. */
+/** What a recorded `ddev exec "GHOST_ACCOUNTS=<base64> node --input-type=commonjs-typescript - <verb>"` handed to the accounts script. */
 function payloads(log: string) {
   return fs.readFileSync(log, 'utf8').split('\n')
-    .map((l) => /^ddev exec GHOST_ACCOUNTS=(\S+) node - (\w+)$/.exec(l))
+    .map((l) => /^ddev exec GHOST_ACCOUNTS=(\S+) node --input-type=commonjs-typescript - (\w+)$/.exec(l))
     .filter((m): m is RegExpExecArray => !!m)
     .map((m) => ({ verb: m[2], given: JSON.parse(Buffer.from(m[1], 'base64').toString('utf8')) }));
 }
