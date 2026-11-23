@@ -210,5 +210,5 @@ npm test        # the manifest, the commands, the AI items, the functions agains
 
 The plugin is TypeScript throughout. `scripts/ghost-accounts.cts` is not compiled: the functions of the plugin
 pipe it to `node --input-type=commonjs-typescript -` in the project's container and Node.js runs it as it is
-(type stripping, from Node.js 22.18, the lowest the Workspace accepts). It is a CommonJS module with erasable
+(type stripping, on Node.js 24, the lowest the Workspace accepts). It is a CommonJS module with erasable
 syntax only.

@@ -14,7 +14,7 @@
 // Verbs: installed | setup | add | cancel | list. Every one can run again: what is already as
 // asked is left alone. No password is ever printed.
 //
-// TypeScript, run by Node.js as it is (type stripping, from Node.js 22.18): a CommonJS module (.cts)
+// TypeScript, run by Node.js as it is (type stripping, Node.js 24 or later): a CommonJS module (.cts)
 // with erasable syntax only, so there is nothing to build. `npm run lint` of the plugin type-checks it.
 
 /** An account as the functions of the plugin hand it over. */
